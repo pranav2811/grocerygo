@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
-import 'search_screen.dart'; // Import the SearchScreen
+import 'search_screen.dart';
+import 'checkout.dart';
 
 class HomeScreen extends StatefulWidget {
   const HomeScreen({super.key});
@@ -45,14 +46,14 @@ class _HomeScreenState extends State<HomeScreen> {
       backgroundColor: Colors.white,
       elevation: 0,
       automaticallyImplyLeading: false, // Remove the back arrow
-      title: Padding(
-        padding: const EdgeInsets.symmetric(
-            horizontal: 16.0), // Align with the search bar
+      title: const Padding(
+        padding:
+            EdgeInsets.symmetric(horizontal: 16.0), // Align with the search bar
         child: Column(
           crossAxisAlignment:
               CrossAxisAlignment.start, // Align text to the start
           children: [
-            const Text(
+            Text(
               'Deliver to',
               style: TextStyle(
                 color: Colors.black,
@@ -61,7 +62,7 @@ class _HomeScreenState extends State<HomeScreen> {
               ),
             ),
             Row(
-              children: const [
+              children: [
                 Icon(Icons.location_on, color: Colors.orangeAccent),
                 SizedBox(width: 5),
                 Text(
@@ -284,6 +285,14 @@ class _HomeScreenState extends State<HomeScreen> {
       type: BottomNavigationBarType.fixed,
       selectedItemColor: Colors.orangeAccent,
       unselectedItemColor: Colors.grey,
+      onTap: (value) {
+        if (value == 1) {
+          Navigator.push(
+            context,
+            MaterialPageRoute(builder: (context) => const CheckoutPage()),
+          );
+        }
+      },
       items: const [
         BottomNavigationBarItem(
           icon: Icon(Icons.home),

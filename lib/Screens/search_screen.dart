@@ -128,17 +128,17 @@ class _SearchScreenState extends State<SearchScreen> {
           Row(
             mainAxisAlignment: MainAxisAlignment.spaceBetween,
             children: [
-              Row(
+              const Row(
                 children: [
                   CircleAvatar(
                     backgroundImage: NetworkImage(
                         'https://example.com/diljit_profile_image.jpg'),
                     radius: 18,
                   ),
-                  const SizedBox(width: 10),
+                  SizedBox(width: 10),
                   Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
-                    children: const [
+                    children: [
                       Text('Dil-Luminati Tour - India',
                           style: TextStyle(fontWeight: FontWeight.bold)),
                       Text('See Diljit Dosanjh Perform Live',

@@ -1,4 +1,6 @@
+import 'package:grocerygo/Screens/otp_verification_screen.dart';
 import 'package:flutter/material.dart';
+import 'package:firebase_auth/firebase_auth.dart';
 
 class SignUpScreen extends StatefulWidget {
   const SignUpScreen({super.key});
@@ -13,13 +15,58 @@ class _SignUpScreenState extends State<SignUpScreen> {
   final TextEditingController _emailController = TextEditingController();
   final TextEditingController _phoneController = TextEditingController();
   final TextEditingController _passwordController = TextEditingController();
+  final FirebaseAuth _auth = FirebaseAuth.instance;
 
-  void _signup() {
+  late String _verificationId;
+
+  void _signup() async {
     if (_formKey.currentState?.validate() ?? false) {
-      // Perform sign-up logic
-      debugPrint('Sign up successful');
-    } else {
-      debugPrint('Sign up form validation failed');
+      // Request Firebase to send OTP to the given phone number
+      await _auth.verifyPhoneNumber(
+        phoneNumber:
+            '+91${_phoneController.text}', // Adjust for your region code
+        verificationCompleted: (PhoneAuthCredential credential) async {
+          // Sign in automatically if verification is completed instantly
+          await _auth.signInWithCredential(credential);
+          // After phone verification, create an email/password account
+          _registerWithEmailAndPassword();
+        },
+        verificationFailed: (FirebaseAuthException e) {
+          debugPrint('Phone verification failed: ${e.message}');
+        },
+        codeSent: (String verificationId, int? resendToken) {
+          // Save the verification ID and navigate to the OTP screen
+          _verificationId = verificationId;
+          Navigator.push(
+            context,
+            MaterialPageRoute(
+              builder: (context) => OtpVerificationScreen(
+                verificationId: verificationId,
+                onVerificationSuccess: _registerWithEmailAndPassword,
+              ),
+            ),
+          );
+        },
+        codeAutoRetrievalTimeout: (String verificationId) {
+          _verificationId = verificationId;
+        },
+      );
+    }
+  }
+
+  Future<void> _registerWithEmailAndPassword() async {
+    try {
+      // Register the user with email and password
+      UserCredential userCredential =
+          await _auth.createUserWithEmailAndPassword(
+        email: _emailController.text,
+        password: _passwordController.text,
+      );
+
+      // Navigate to the home screen after successful registration
+      Navigator.pushReplacementNamed(context, '/home');
+    } catch (e) {
+      debugPrint('Email/password registration failed: $e');
     }
   }
 

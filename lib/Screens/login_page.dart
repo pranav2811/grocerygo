@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:grocerygo/Screens/home_screen.dart';
-import 'signup_screen.dart'; // Import the Sign Up screen
+import 'signup_screen.dart';
+import 'package:firebase_auth/firebase_auth.dart';
 
 class LoginScreen extends StatefulWidget {
   const LoginScreen({super.key});
@@ -17,15 +18,66 @@ class _LoginScreenState extends State<LoginScreen> {
     (index) => TextEditingController(),
   );
   bool _isOtpScreen = false;
+  String _verificationId = '';
+  final FirebaseAuth _auth = FirebaseAuth.instance;
 
-  void _login() {
+  void _login() async {
     if (_formKey.currentState?.validate() ?? false) {
-      setState(() {
-        _isOtpScreen = true;
-      });
-    } else {
-      debugPrint('Form validation failed or formState is null');
+      String phoneNumber = '+91${_phoneController.text}';
+
+      List<String> methods =
+          await _auth.fetchSignInMethodsForEmail(phoneNumber);
+      if (methods.contains('phone')) {
+        _sendOtp(phoneNumber);
+      } else {
+        debugPrint('Phone number not registered');
+        _showSnackBar('Phone number not registered. Please sign up');
+      }
     }
+  }
+
+  void _sendOtp(String phoneNumber) async {
+    await _auth.verifyPhoneNumber(
+      phoneNumber: phoneNumber,
+      verificationCompleted: (PhoneAuthCredential credential) async {
+        await _auth.signInWithCredential(credential);
+        Navigator.pushReplacement(context,
+            MaterialPageRoute(builder: (context) => const HomeScreen()));
+      },
+      verificationFailed: (FirebaseAuthException e) {
+        debugPrint('Verification failed: ${e.message}');
+        _showSnackBar('Failed to send OTP. Please try again.');
+      },
+      codeSent: (String verificationId, int? resendToken) {
+        setState(() {
+          _isOtpScreen = true;
+          _verificationId = verificationId;
+        });
+      },
+      codeAutoRetrievalTimeout: (String verificationId) {
+        _verificationId = verificationId;
+      },
+    );
+  }
+
+  void _verifyOtp() async {
+    String smsCode =
+        _otpControllers.map((controller) => controller.text).join();
+    PhoneAuthCredential credential = PhoneAuthProvider.credential(
+        verificationId: _verificationId, smsCode: smsCode);
+    try {
+      await _auth.signInWithCredential(credential);
+      Navigator.pushReplacement(
+          context, MaterialPageRoute(builder: (context) => const HomeScreen()));
+    } catch (e) {
+      debugPrint('OTP verification failed: $e');
+      _showSnackBar('Invalid OTP. Please try again.');
+    }
+  }
+
+  void _showSnackBar(String message) {
+    ScaffoldMessenger.of(context)
+        .showSnackBar(SnackBar(content: Text(message)));
   }
 
   @override
