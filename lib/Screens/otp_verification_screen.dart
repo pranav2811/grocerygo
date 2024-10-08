@@ -6,10 +6,10 @@ class OtpVerificationScreen extends StatefulWidget {
   final VoidCallback onVerificationSuccess;
 
   const OtpVerificationScreen({
-    Key? key,
+    super.key,
     required this.verificationId,
     required this.onVerificationSuccess,
-  }) : super(key: key);
+  });
 
   @override
   _OtpVerificationScreenState createState() => _OtpVerificationScreenState();
