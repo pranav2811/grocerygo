@@ -8,15 +8,21 @@ class CheckoutPage extends StatefulWidget {
 }
 
 class _CheckoutPageState extends State<CheckoutPage> {
-  // Sample cart items
   List<CartItem> cartItems = [
     CartItem(
-        name: 'Apple', price: 1.5, quantity: 2, imageUrl: 'assets/apple.png'),
+      name: 'Apple',
+      price: 1.5,
+      quantity: 2,
+      imageUrl: 'https://images.unsplash.com/photo-1567306226416-28f0efdc88ce',
+    ),
     CartItem(
-        name: 'Bread', price: 2.0, quantity: 1, imageUrl: 'assets/bread.png'),
+      name: 'Bread',
+      price: 2.0,
+      quantity: 1,
+      imageUrl: 'https://images.unsplash.com/photo-1542838132-92c53300491e',
+    ),
   ];
 
-  // Sample addresses
   List<String> addresses = [
     '123 Main Street',
     '456 Maple Avenue',
@@ -24,7 +30,6 @@ class _CheckoutPageState extends State<CheckoutPage> {
   ];
   String selectedAddress = '';
 
-  // Sample payment methods
   List<String> paymentMethods = [
     'Credit Card',
     'Debit Card',
@@ -45,16 +50,18 @@ class _CheckoutPageState extends State<CheckoutPage> {
     return Scaffold(
       appBar: AppBar(
         title: const Text('Checkout'),
+        centerTitle: true,
       ),
       body: Column(
         children: [
           Expanded(
             child: ListView(
+              padding: const EdgeInsets.symmetric(horizontal: 16),
               children: [
                 _buildCartItemsSection(),
-                const Divider(),
+                const Divider(thickness: 1.5),
                 _buildAddressSelectionSection(),
-                const Divider(),
+                const Divider(thickness: 1.5),
                 _buildPaymentMethodSection(),
               ],
             ),
@@ -70,6 +77,7 @@ class _CheckoutPageState extends State<CheckoutPage> {
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
         _sectionTitle('Your Cart'),
+        const SizedBox(height: 10),
         ListView.builder(
           shrinkWrap: true,
           physics: const NeverScrollableScrollPhysics(),
@@ -83,15 +91,58 @@ class _CheckoutPageState extends State<CheckoutPage> {
   }
 
   Widget _buildCartItem(CartItem item) {
-    return ListTile(
-      leading: Image.asset(
-        item.imageUrl,
-        width: 50,
-        height: 50,
+    return Card(
+      elevation: 2,
+      margin: const EdgeInsets.symmetric(vertical: 8),
+      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(15)),
+      child: Padding(
+        padding: const EdgeInsets.all(12),
+        child: Row(
+          children: [
+            ClipRRect(
+              borderRadius: BorderRadius.circular(10),
+              child: Image.network(
+                item.imageUrl,
+                width: 60,
+                height: 60,
+                fit: BoxFit.cover,
+                errorBuilder: (context, error, stackTrace) =>
+                    const Icon(Icons.error, color: Colors.red),
+                loadingBuilder: (context, child, loadingProgress) {
+                  if (loadingProgress == null) return child;
+                  return const SizedBox(
+                    width: 60,
+                    height: 60,
+                    child: Center(child: CircularProgressIndicator()),
+                  );
+                },
+              ),
+            ),
+            const SizedBox(width: 15),
+            Expanded(
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Text(
+                    item.name,
+                    style: const TextStyle(
+                        fontSize: 18, fontWeight: FontWeight.bold),
+                  ),
+                  const SizedBox(height: 5),
+                  Text(
+                    '\$${(item.price * item.quantity).toStringAsFixed(2)}',
+                    style: const TextStyle(
+                      fontSize: 16,
+                      color: Colors.grey,
+                    ),
+                  ),
+                ],
+              ),
+            ),
+            _buildQuantityControl(item),
+          ],
+        ),
       ),
-      title: Text(item.name),
-      subtitle: Text('\$${(item.price * item.quantity).toStringAsFixed(2)}'),
-      trailing: _buildQuantityControl(item),
     );
   }
 
@@ -100,7 +151,7 @@ class _CheckoutPageState extends State<CheckoutPage> {
       mainAxisSize: MainAxisSize.min,
       children: [
         IconButton(
-          icon: const Icon(Icons.remove_circle_outline),
+          icon: const Icon(Icons.remove_circle_outline, color: Colors.red),
           onPressed: () {
             setState(() {
               if (item.quantity > 1) item.quantity--;
@@ -109,10 +160,10 @@ class _CheckoutPageState extends State<CheckoutPage> {
         ),
         Text(
           '${item.quantity}',
-          style: const TextStyle(fontSize: 16),
+          style: const TextStyle(fontSize: 16, fontWeight: FontWeight.w600),
         ),
         IconButton(
-          icon: const Icon(Icons.add_circle_outline),
+          icon: const Icon(Icons.add_circle_outline, color: Colors.green),
           onPressed: () {
             setState(() {
               item.quantity++;
@@ -128,21 +179,28 @@ class _CheckoutPageState extends State<CheckoutPage> {
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
         _sectionTitle('Select Delivery Address'),
+        const SizedBox(height: 10),
         ...addresses.map((address) {
-          return RadioListTile(
-            title: Text(address),
-            value: address,
-            groupValue: selectedAddress,
-            onChanged: (value) {
-              setState(() {
-                selectedAddress = value!;
-              });
-            },
+          return Card(
+            margin: const EdgeInsets.symmetric(vertical: 5),
+            shape:
+                RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
+            child: RadioListTile(
+              activeColor: Colors.blueAccent,
+              title: Text(address),
+              value: address,
+              groupValue: selectedAddress,
+              onChanged: (value) {
+                setState(() {
+                  selectedAddress = value!;
+                });
+              },
+            ),
           );
         }),
         TextButton(
           onPressed: () {
-            // Navigate to address addition page
+            // Add new address
           },
           child: const Text('+ Add New Address'),
         ),
@@ -155,16 +213,23 @@ class _CheckoutPageState extends State<CheckoutPage> {
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
         _sectionTitle('Select Payment Method'),
+        const SizedBox(height: 10),
         ...paymentMethods.map((method) {
-          return RadioListTile(
-            title: Text(method),
-            value: method,
-            groupValue: selectedPaymentMethod,
-            onChanged: (value) {
-              setState(() {
-                selectedPaymentMethod = value!;
-              });
-            },
+          return Card(
+            margin: const EdgeInsets.symmetric(vertical: 5),
+            shape:
+                RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
+            child: RadioListTile(
+              activeColor: Colors.blueAccent,
+              title: Text(method),
+              value: method,
+              groupValue: selectedPaymentMethod,
+              onChanged: (value) {
+                setState(() {
+                  selectedPaymentMethod = value!;
+                });
+              },
+            ),
           );
         }),
       ],
@@ -181,22 +246,29 @@ class _CheckoutPageState extends State<CheckoutPage> {
       padding: const EdgeInsets.all(16),
       child: ElevatedButton(
         onPressed: () {
-          // Implement payment processing
+          // Process payment
         },
         style: ElevatedButton.styleFrom(
           minimumSize: const Size(double.infinity, 50),
+          backgroundColor: Colors.orange,
+          shape: RoundedRectangleBorder(
+            borderRadius: BorderRadius.circular(10),
+          ),
         ),
-        child: Text('Pay Now - \$${totalAmount.toStringAsFixed(2)}'),
+        child: Text(
+          'Pay Now - \$${totalAmount.toStringAsFixed(2)}',
+          style: const TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
+        ),
       ),
     );
   }
 
   Widget _sectionTitle(String title) {
     return Padding(
-      padding: const EdgeInsets.all(16),
+      padding: const EdgeInsets.symmetric(vertical: 12),
       child: Text(
         title,
-        style: const TextStyle(fontSize: 20, fontWeight: FontWeight.bold),
+        style: const TextStyle(fontSize: 22, fontWeight: FontWeight.bold),
       ),
     );
   }

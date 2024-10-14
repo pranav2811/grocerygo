@@ -1,6 +1,8 @@
 import 'package:flutter/material.dart';
+import 'package:grocerygo/Screens/photo_order.dart';
 import 'search_screen.dart';
 import 'checkout.dart';
+import 'package:cached_network_image/cached_network_image.dart';
 
 class HomeScreen extends StatefulWidget {
   const HomeScreen({super.key});
@@ -10,6 +12,8 @@ class HomeScreen extends StatefulWidget {
 }
 
 class _HomeScreenState extends State<HomeScreen> {
+  int _currentIndex = 0; // For bottom navigation bar
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -20,7 +24,6 @@ class _HomeScreenState extends State<HomeScreen> {
           children: [
             GestureDetector(
               onTap: () {
-                // Navigate to the search screen when search bar is clicked
                 Navigator.push(
                   context,
                   MaterialPageRoute(builder: (context) => const SearchScreen()),
@@ -31,9 +34,9 @@ class _HomeScreenState extends State<HomeScreen> {
             const SizedBox(height: 20),
             _buildPromotionalBanner(),
             const SizedBox(height: 20),
-            _buildCategoriesSection(),
+            _buildCategoriesGrid(),
             const SizedBox(height: 20),
-            _buildRestaurantsSection(),
+            _buildFeaturedProductsList(),
           ],
         ),
       ),
@@ -45,13 +48,11 @@ class _HomeScreenState extends State<HomeScreen> {
     return AppBar(
       backgroundColor: Colors.white,
       elevation: 0,
-      automaticallyImplyLeading: false, // Remove the back arrow
+      automaticallyImplyLeading: false,
       title: const Padding(
-        padding:
-            EdgeInsets.symmetric(horizontal: 16.0), // Align with the search bar
+        padding: EdgeInsets.symmetric(horizontal: 16.0),
         child: Column(
-          crossAxisAlignment:
-              CrossAxisAlignment.start, // Align text to the start
+          crossAxisAlignment: CrossAxisAlignment.start,
           children: [
             Text(
               'Deliver to',
@@ -84,10 +85,10 @@ class _HomeScreenState extends State<HomeScreen> {
     return Padding(
       padding: const EdgeInsets.symmetric(horizontal: 16.0),
       child: TextField(
-        enabled: false, // Disable text input to only allow click action
+        enabled: false,
         decoration: InputDecoration(
           prefixIcon: const Icon(Icons.search, color: Colors.grey),
-          hintText: 'Search for restaurants, groceries...',
+          hintText: 'Search for products...',
           fillColor: Colors.grey[200],
           filled: true,
           border: OutlineInputBorder(
@@ -106,11 +107,11 @@ class _HomeScreenState extends State<HomeScreen> {
       child: PageView(
         children: [
           _buildBanner(
-              'https://cdn.grabon.in/gograbon/images/merchant/1610000375685.png'), // Grocery discount image
+              'https://images.unsplash.com/photo-1516684669134-de6f85e0f1b8'),
           _buildBanner(
-              'https://cdn.pixabay.com/photo/2016/11/23/14/45/beef-1851441_960_720.jpg'), // Another promo
+              'https://images.unsplash.com/photo-1498579809087-ef1e558fd1dc'),
           _buildBanner(
-              'https://cdn.pixabay.com/photo/2017/12/09/08/18/sushi-3007395_960_720.jpg'), // Sushi promo
+              'https://images.unsplash.com/photo-1556912167-f556f1c44f4c'),
         ],
       ),
     );
@@ -121,172 +122,198 @@ class _HomeScreenState extends State<HomeScreen> {
       margin: const EdgeInsets.symmetric(horizontal: 8),
       decoration: BoxDecoration(
         borderRadius: BorderRadius.circular(10),
-        image: DecorationImage(
-          image: NetworkImage(imageUrl),
-          fit: BoxFit.cover,
+      ),
+      child: CachedNetworkImage(
+        imageUrl: imageUrl,
+        imageBuilder: (context, imageProvider) => Container(
+          decoration: BoxDecoration(
+            borderRadius: BorderRadius.circular(10),
+            image: DecorationImage(
+              image: imageProvider,
+              fit: BoxFit.cover,
+            ),
+          ),
         ),
+        placeholder: (context, url) =>
+            const Center(child: CircularProgressIndicator()),
+        errorWidget: (context, url, error) => const Icon(Icons.error),
       ),
     );
   }
 
-  Widget _buildCategoriesSection() {
-    return Column(
-      crossAxisAlignment: CrossAxisAlignment.start,
-      children: [
-        const Padding(
-          padding: EdgeInsets.symmetric(horizontal: 16.0),
-          child: Text(
-            'Explore Categories',
-            style: TextStyle(
-              fontSize: 18,
-              fontWeight: FontWeight.bold,
-            ),
+  Widget _buildCategoriesGrid() {
+    return Padding(
+      padding: const EdgeInsets.symmetric(horizontal: 16.0),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          const Text(
+            'Shop by Categories',
+            style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
           ),
-        ),
-        const SizedBox(height: 10),
-        SizedBox(
-          height: 120,
-          child: ListView(
-            scrollDirection: Axis.horizontal,
+          const SizedBox(height: 10),
+          GridView.count(
+            crossAxisCount: 3,
+            shrinkWrap: true,
+            physics: const NeverScrollableScrollPhysics(),
             children: [
               _buildCategoryItem(
-                  'https://cdn.pixabay.com/photo/2017/06/02/18/24/cherry-2367023_960_720.jpg',
-                  'Groceries'),
+                  'https://images.unsplash.com/photo-1579613833672-f1d1a81a7b9e',
+                  'Fruits & Vegetables'),
               _buildCategoryItem(
-                  'https://cdn.pixabay.com/photo/2015/04/10/00/41/food-715542_960_720.jpg',
-                  'Restaurants'),
+                  'https://images.unsplash.com/photo-1599639958261-7b747867bb5c',
+                  'Dairy & Eggs'),
               _buildCategoryItem(
-                  'https://cdn.pixabay.com/photo/2014/10/23/18/05/burger-500054_960_720.jpg',
-                  'Snacks'),
+                  'https://images.unsplash.com/photo-1532635245-91008b5b24b7',
+                  'Bakery'),
               _buildCategoryItem(
-                  'https://cdn.pixabay.com/photo/2017/06/23/19/29/milk-2434157_960_720.jpg',
-                  'Dairy Products'),
+                  'https://images.unsplash.com/photo-1514515020721-3c8a2fabe870',
+                  'Meat & Seafood'),
               _buildCategoryItem(
-                  'https://cdn.pixabay.com/photo/2015/09/30/12/16/juice-965860_960_720.jpg',
-                  'Beverages'),
+                  'https://images.unsplash.com/photo-1566843974233-4314a1ea3a0d',
+                  'Snacks & Beverages'),
             ],
           ),
-        ),
-      ],
+        ],
+      ),
     );
   }
 
   Widget _buildCategoryItem(String imageUrl, String label) {
-    return Container(
-      width: 100,
-      margin: const EdgeInsets.symmetric(horizontal: 8),
-      child: Column(
-        children: [
-          Container(
-            height: 80,
-            decoration: BoxDecoration(
-              borderRadius: BorderRadius.circular(10),
-              image: DecorationImage(
-                image: NetworkImage(imageUrl),
-                fit: BoxFit.cover,
+    return Column(
+      children: [
+        Flexible(
+          child: CachedNetworkImage(
+            imageUrl: imageUrl,
+            imageBuilder: (context, imageProvider) => Container(
+              height: 80,
+              width: 80,
+              decoration: BoxDecoration(
+                borderRadius: BorderRadius.circular(10),
+                image: DecorationImage(
+                  image: imageProvider,
+                  fit: BoxFit.cover,
+                ),
               ),
             ),
-          ),
-          const SizedBox(height: 5),
-          Text(
-            label,
-            style: const TextStyle(fontSize: 14, fontWeight: FontWeight.w600),
-          ),
-        ],
-      ),
-    );
-  }
-
-  Widget _buildRestaurantsSection() {
-    return Column(
-      crossAxisAlignment: CrossAxisAlignment.start,
-      children: [
-        const Padding(
-          padding: EdgeInsets.symmetric(horizontal: 16.0),
-          child: Text(
-            'Popular Restaurants',
-            style: TextStyle(
-              fontSize: 18,
-              fontWeight: FontWeight.bold,
-            ),
+            placeholder: (context, url) =>
+                const Center(child: CircularProgressIndicator()),
+            errorWidget: (context, url, error) => const Icon(Icons.error),
           ),
         ),
-        const SizedBox(height: 10),
-        ListView(
-          physics: const NeverScrollableScrollPhysics(),
-          shrinkWrap: true,
-          children: [
-            _buildRestaurantItem(
-                'https://cdn.pixabay.com/photo/2016/11/18/15/52/pizza-1838548_960_720.jpg',
-                'Pizzeria',
-                '4.5',
-                'Italian'),
-            _buildRestaurantItem(
-                'https://cdn.pixabay.com/photo/2015/04/08/13/13/food-712665_960_720.jpg',
-                'Burger Hub',
-                '4.3',
-                'Fast Food'),
-            _buildRestaurantItem(
-                'https://cdn.pixabay.com/photo/2016/11/29/09/32/food-1869716_960_720.jpg',
-                'Sushi House',
-                '4.8',
-                'Japanese'),
-          ],
+        const SizedBox(height: 5),
+        Text(
+          label,
+          style: const TextStyle(fontSize: 12, fontWeight: FontWeight.w600),
+          textAlign: TextAlign.center,
         ),
       ],
     );
   }
 
-  Widget _buildRestaurantItem(
-      String imageUrl, String name, String rating, String category) {
+  Widget _buildFeaturedProductsList() {
     return Padding(
-      padding: const EdgeInsets.symmetric(horizontal: 16.0, vertical: 10),
-      child: Row(
+      padding: const EdgeInsets.symmetric(horizontal: 16.0),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          Container(
-            height: 80,
-            width: 80,
-            decoration: BoxDecoration(
-              borderRadius: BorderRadius.circular(10),
-              image: DecorationImage(
-                image: NetworkImage(imageUrl),
-                fit: BoxFit.cover,
-              ),
-            ),
+          const Text(
+            'Featured Products',
+            style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
           ),
-          const SizedBox(width: 16),
-          Expanded(
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                Text(
-                  name,
-                  style: const TextStyle(
-                      fontSize: 16, fontWeight: FontWeight.bold),
-                ),
-                const SizedBox(height: 5),
-                Text(
-                  '$category · $rating ★',
-                  style: const TextStyle(
-                    color: Colors.grey,
-                  ),
-                ),
-              ],
-            ),
-          ),
+          const SizedBox(height: 10),
+          _buildFeaturedProductItem(
+              'https://images.unsplash.com/photo-1586201375761-83865001a0d5',
+              'Fresh Vegetables'),
+          _buildFeaturedProductItem(
+              'https://images.unsplash.com/photo-1543353071-873f17a7a088',
+              'Premium Meat'),
+          _buildFeaturedProductItem(
+              'https://images.unsplash.com/photo-1533777324565-a040eb52fac1',
+              'Baked Goods'),
         ],
       ),
+    );
+  }
+
+  Widget _buildFeaturedProductItem(String imageUrl, String label) {
+    int quantity = 0;
+
+    return StatefulBuilder(
+      builder: (context, setState) {
+        return Container(
+          margin: const EdgeInsets.only(bottom: 10),
+          child: Row(
+            children: [
+              CachedNetworkImage(
+                imageUrl: imageUrl,
+                imageBuilder: (context, imageProvider) => Container(
+                  height: 80,
+                  width: 80,
+                  decoration: BoxDecoration(
+                    borderRadius: BorderRadius.circular(10),
+                    image: DecorationImage(
+                      image: imageProvider,
+                      fit: BoxFit.cover,
+                    ),
+                  ),
+                ),
+                placeholder: (context, url) =>
+                    const CircularProgressIndicator(),
+                errorWidget: (context, url, error) => const Icon(Icons.error),
+              ),
+              const SizedBox(width: 16),
+              Expanded(
+                child: Text(
+                  label,
+                  style: const TextStyle(
+                      fontSize: 16, fontWeight: FontWeight.w600),
+                ),
+              ),
+              Row(
+                children: [
+                  IconButton(
+                    icon: const Icon(Icons.remove_circle_outline),
+                    onPressed: () {
+                      if (quantity > 0) {
+                        setState(() => quantity--);
+                      }
+                    },
+                  ),
+                  Text('$quantity'),
+                  IconButton(
+                    icon: const Icon(Icons.add_circle_outline),
+                    onPressed: () {
+                      setState(() => quantity++);
+                    },
+                  ),
+                ],
+              ),
+            ],
+          ),
+        );
+      },
     );
   }
 
   Widget _buildBottomNavigationBar() {
     return BottomNavigationBar(
-      currentIndex: 0,
+      currentIndex: _currentIndex,
       type: BottomNavigationBarType.fixed,
       selectedItemColor: Colors.orangeAccent,
       unselectedItemColor: Colors.grey,
       onTap: (value) {
-        if (value == 1) {
+        setState(() {
+          _currentIndex = value;
+        });
+        if (value == 0) {
+          // Stay on Home
+        } else if (value == 1) {
+          Navigator.push(
+            context,
+            MaterialPageRoute(builder: (context) => const PhotoOrderPage()),
+          );
+        } else if (value == 2) {
           Navigator.push(
             context,
             MaterialPageRoute(builder: (context) => const CheckoutPage()),
@@ -297,6 +324,10 @@ class _HomeScreenState extends State<HomeScreen> {
         BottomNavigationBarItem(
           icon: Icon(Icons.home),
           label: 'Home',
+        ),
+        BottomNavigationBarItem(
+          icon: Icon(Icons.camera),
+          label: 'Scan',
         ),
         BottomNavigationBarItem(
           icon: Icon(Icons.shopping_cart),

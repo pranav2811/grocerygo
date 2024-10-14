@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:grocerygo/Screens/home_screen.dart';
 import 'package:grocerygo/Screens/login_page.dart';
 import 'package:firebase_core/firebase_core.dart';
 
@@ -18,7 +19,7 @@ class MyApp extends StatelessWidget {
       theme: ThemeData(
         primarySwatch: Colors.green,
       ),
-      home: const LoginScreen(),
+      home: const HomeScreen(),
     );
   }
 }
